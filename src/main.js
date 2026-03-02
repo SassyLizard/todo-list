@@ -1,4 +1,5 @@
 import './style.css'
+import { supabase } from './supabaseClient'
 
 const appElement = document.querySelector('#app')
 
@@ -34,6 +35,71 @@ const list = appElement.querySelector('.todo-list')
 const countEl = appElement.querySelector('.todo-count')
 
 let todos = []
+
+async function fetchTodos() {
+  const { data, error } = await supabase
+    .from('todos')
+    .select('*')
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching todos', error)
+    return []
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    text: row.text ?? '',
+    completed: !!row.completed,
+  }))
+}
+
+async function createTodo(text) {
+  const { data, error } = await supabase
+    .from('todos')
+    .insert({ text, completed: false })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error creating todo', error)
+    return null
+  }
+
+  return {
+    id: data.id,
+    text: data.text ?? '',
+    completed: !!data.completed,
+  }
+}
+
+async function updateTodo(id, updates) {
+  const { error } = await supabase
+    .from('todos')
+    .update(updates)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating todo', error)
+    return false
+  }
+
+  return true
+}
+
+async function deleteTodo(id) {
+  const { error } = await supabase
+    .from('todos')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error deleting todo', error)
+    return false
+  }
+
+  return true
+}
 
 function updateCount() {
   const remaining = todos.filter((t) => !t.completed).length
@@ -77,14 +143,25 @@ function renderTodos() {
     li.appendChild(deleteButton)
     list.appendChild(li)
 
-    checkbox.addEventListener('change', () => {
+    checkbox.addEventListener('change', async () => {
+      const nextCompleted = !todo.completed
+      const ok = await updateTodo(todo.id, { completed: nextCompleted })
+      if (!ok) {
+        // Revert checkbox if update fails
+        checkbox.checked = todo.completed
+        return
+      }
+
       todos = todos.map((t) =>
-        t.id === todo.id ? { ...t, completed: checkbox.checked } : t,
+        t.id === todo.id ? { ...t, completed: nextCompleted } : t,
       )
       renderTodos()
     })
 
-    deleteButton.addEventListener('click', () => {
+    deleteButton.addEventListener('click', async () => {
+      const ok = await deleteTodo(todo.id)
+      if (!ok) return
+
       todos = todos.filter((t) => t.id !== todo.id)
       renderTodos()
     })
@@ -93,22 +170,23 @@ function renderTodos() {
   updateCount()
 }
 
-form.addEventListener('submit', (event) => {
+form.addEventListener('submit', async (event) => {
   event.preventDefault()
   const text = input.value.trim()
   if (!text) return
+  const created = await createTodo(text)
+  if (!created) return
 
-  const newTodo = {
-    id: Date.now(),
-    text,
-    completed: false,
-  }
-
-  todos = [...todos, newTodo]
+  todos = [...todos, created]
   input.value = ''
   input.focus()
 
   renderTodos()
 })
 
-renderTodos()
+async function init() {
+  todos = await fetchTodos()
+  renderTodos()
+}
+
+init()
