@@ -1,11 +1,52 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* Typography tokens */
+  --font-family-body: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", Avenir, Helvetica, Arial, sans-serif;
+  --font-line-height-base: 1.5;
+  --font-weight-regular: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+
+  /* Color tokens */
+  --color-bg: #f9fafb;
+  --color-bg-elevated: #ffffff;
+  --color-border-subtle: #e5e7eb;
+  --color-border-strong: #d1d5db;
+
+  --color-text-main: #111827;
+  --color-text-muted: #6b7280;
+  --color-text-subtle: #9ca3af;
+
+  --color-accent: #2563eb;
+  --color-accent-soft: #dbeafe;
+  --color-accent-hover: #1d4ed8;
+
+  --color-danger: #dc2626;
+  --color-danger-soft: #fee2e2;
+
+  /* Spacing scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
+
+  /* Radius tokens */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-pill: 9999px;
+
+  /* Base document styles (using tokens) */
+  font-family: var(--font-family-body);
+  line-height: var(--font-line-height-base);
+  font-weight: var(--font-weight-regular);
+
+  color: var(--color-text-main);
+  background-color: var(--color-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,33 +54,82 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Base reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+ul[role="list"],
+ol[role="list"] {
+  list-style: none;
+  padding: 0;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* Base text/link styles */
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--color-accent);
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: var(--color-accent-hover);
 }
 
+/* Base body styles using tokens */
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
 }
 
 h1 {
-  font-size: 3.2em;
+  font-size: 2.25rem;
   line-height: 1.1;
 }
 
 #app {
-  max-width: 1280px;
+  width: 100%;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: var(--space-xl);
+  text-align: left;
 }
 
 .logo {
@@ -56,26 +146,32 @@ h1 {
 }
 
 .card {
-  padding: 2em;
+  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-elevated);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
 }
 
 .read-the-docs {
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 button {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
-  font-size: 1em;
+  font-size: var(--font-size-md);
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--color-accent);
+  color: #ffffff;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, background-color 0.25s, box-shadow 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--color-accent-hover);
+  background-color: var(--color-accent-hover);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
 }
 button:focus,
 button:focus-visible {
@@ -84,13 +180,7 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+    background-color: var(--color-bg);
+    color: var(--color-text-main);
   }
 }
