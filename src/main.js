@@ -6,8 +6,18 @@ const appElement = document.querySelector('#app')
 appElement.innerHTML = `
   <main class="todo-app" aria-label="Todo list application">
     <header class="todo-header">
-      <h1 class="todo-title">Todo List</h1>
-      <p class="todo-subtitle">Capture tasks and keep track of what’s left.</p>
+      <div>
+        <h1 class="todo-title">Todo List</h1>
+        <p class="todo-subtitle">Capture tasks and keep track of what’s left.</p>
+      </div>
+      <div class="auth-bar" aria-label="Account status">
+        <span class="auth-status"></span>
+        <div class="auth-actions">
+          <button type="button" class="auth-signup">Sign up</button>
+          <button type="button" class="auth-login">Log in</button>
+          <button type="button" class="auth-logout" hidden>Log out</button>
+        </div>
+      </div>
     </header>
 
     <form class="todo-input-row" autocomplete="off">
@@ -33,8 +43,73 @@ const form = appElement.querySelector('.todo-input-row')
 const input = appElement.querySelector('.todo-input')
 const list = appElement.querySelector('.todo-list')
 const countEl = appElement.querySelector('.todo-count')
+const authStatusEl = appElement.querySelector('.auth-status')
+const signupButton = appElement.querySelector('.auth-signup')
+const loginButton = appElement.querySelector('.auth-login')
+const logoutButton = appElement.querySelector('.auth-logout')
 
 let todos = []
+let currentUser = null
+
+function renderAuthUI() {
+  if (!authStatusEl || !signupButton || !loginButton || !logoutButton) return
+
+  if (!currentUser) {
+    authStatusEl.textContent = 'Not signed in'
+    signupButton.disabled = false
+    loginButton.disabled = false
+    logoutButton.hidden = true
+    return
+  }
+
+  if (currentUser.email) {
+    authStatusEl.textContent = `Signed in as ${currentUser.email}`
+    signupButton.disabled = true
+    loginButton.disabled = true
+    logoutButton.hidden = false
+  } else {
+    authStatusEl.textContent = 'Using a temporary account'
+    signupButton.disabled = false
+    loginButton.disabled = false
+    logoutButton.hidden = false
+  }
+}
+
+async function initAuth() {
+  // Try to get an existing session first.
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession()
+
+  if (error) {
+    console.error('Error getting auth session', error)
+  }
+
+  let user = session?.user ?? null
+
+  if (!user) {
+    // No session yet: transparently sign in anonymously so the user
+    // can start using the app immediately.
+    const { data, error: anonError } = await supabase.auth.signInAnonymously()
+    if (anonError) {
+      console.error('Error signing in anonymously', anonError)
+    } else {
+      user = data?.user ?? null
+    }
+  }
+
+  currentUser = user
+  renderAuthUI()
+
+  // Keep auth state in sync with Supabase.
+  supabase.auth.onAuthStateChange((_event, newSession) => {
+    currentUser = newSession?.user ?? null
+    renderAuthUI()
+    // Refetch todos when auth state changes so we show the right list.
+    refreshTodos()
+  })
+}
 
 async function fetchTodos() {
   const { data, error } = await supabase
@@ -55,9 +130,14 @@ async function fetchTodos() {
 }
 
 async function createTodo(text) {
+  if (!currentUser) {
+    console.error('No authenticated user to attach todo to')
+    return null
+  }
+
   const { data, error } = await supabase
     .from('todos')
-    .insert({ text, completed: false })
+    .insert({ text, completed: false, user_id: currentUser.id })
     .select()
     .single()
 
@@ -170,6 +250,11 @@ function renderTodos() {
   updateCount()
 }
 
+async function refreshTodos() {
+  todos = await fetchTodos()
+  renderTodos()
+}
+
 form.addEventListener('submit', async (event) => {
   event.preventDefault()
   const text = input.value.trim()
@@ -184,9 +269,48 @@ form.addEventListener('submit', async (event) => {
   renderTodos()
 })
 
+signupButton.addEventListener('click', async () => {
+  const email = window.prompt('Enter email for your account:')
+  if (!email) return
+  const password = window.prompt('Create a password:')
+  if (!password) return
+
+  const { error } = await supabase.auth.signUp({ email, password })
+  if (error) {
+    console.error('Error signing up', error)
+    window.alert('Sign up failed. Please try again.')
+    return
+  }
+
+  window.alert('Check your email to confirm your account, then log in.')
+})
+
+loginButton.addEventListener('click', async () => {
+  const email = window.prompt('Email:')
+  if (!email) return
+  const password = window.prompt('Password:')
+  if (!password) return
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) {
+    console.error('Error logging in', error)
+    window.alert('Login failed. Please check your details and try again.')
+    return
+  }
+})
+
+logoutButton.addEventListener('click', async () => {
+  const { error } = await supabase.auth.signOut()
+  if (error) {
+    console.error('Error logging out', error)
+    window.alert('Log out failed. Please try again.')
+    return
+  }
+})
+
 async function init() {
-  todos = await fetchTodos()
-  renderTodos()
+  await initAuth()
+  await refreshTodos()
 }
 
 init()
