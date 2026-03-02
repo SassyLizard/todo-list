@@ -225,6 +225,36 @@ button:focus-visible {
   font-size: var(--font-size-xs);
 }
 
+.auth-form {
+  margin-top: var(--space-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.auth-form input {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background-color: #020617;
+  color: var(--color-text-main);
+  font-size: var(--font-size-xs);
+}
+
+.auth-form .auth-email {
+  flex: 1 1 140px;
+}
+
+.auth-form .auth-password {
+  flex: 1 1 120px;
+}
+
+.auth-form .auth-submit,
+.auth-form .auth-cancel {
+  padding: 0.25rem 0.75rem;
+  font-size: var(--font-size-xs);
+}
+
 .todo-input-row {
   display: flex;
   align-items: center;

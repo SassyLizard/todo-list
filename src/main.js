@@ -20,6 +20,27 @@ appElement.innerHTML = `
       </div>
     </header>
 
+    <form class="auth-form" autocomplete="off" hidden>
+      <input
+        class="auth-email"
+        type="email"
+        name="email"
+        placeholder="Email"
+        aria-label="Email"
+        required
+      />
+      <input
+        class="auth-password"
+        type="password"
+        name="password"
+        placeholder="Password"
+        aria-label="Password"
+        required
+      />
+      <button type="submit" class="auth-submit">Continue</button>
+      <button type="button" class="auth-cancel">Cancel</button>
+    </form>
+
     <form class="todo-input-row" autocomplete="off">
       <input
         class="todo-input"
@@ -47,9 +68,33 @@ const authStatusEl = appElement.querySelector('.auth-status')
 const signupButton = appElement.querySelector('.auth-signup')
 const loginButton = appElement.querySelector('.auth-login')
 const logoutButton = appElement.querySelector('.auth-logout')
+const authForm = appElement.querySelector('.auth-form')
+const authEmailInput = appElement.querySelector('.auth-email')
+const authPasswordInput = appElement.querySelector('.auth-password')
+const authSubmitButton = appElement.querySelector('.auth-submit')
+const authCancelButton = appElement.querySelector('.auth-cancel')
 
 let todos = []
 let currentUser = null
+let authMode = null // 'signup' | 'login' | null
+
+function closeAuthForm() {
+  if (!authForm) return
+  authForm.hidden = true
+  authMode = null
+  if (authEmailInput) authEmailInput.value = ''
+  if (authPasswordInput) authPasswordInput.value = ''
+}
+
+function openAuthForm(mode) {
+  if (!authForm || !authEmailInput || !authPasswordInput || !authSubmitButton) return
+  authMode = mode
+  authForm.hidden = false
+  authEmailInput.value = ''
+  authPasswordInput.value = ''
+  authSubmitButton.textContent = mode === 'signup' ? 'Create account' : 'Log in'
+  authEmailInput.focus()
+}
 
 function renderAuthUI() {
   if (!authStatusEl || !signupButton || !loginButton || !logoutButton) return
@@ -73,6 +118,9 @@ function renderAuthUI() {
     loginButton.disabled = false
     logoutButton.hidden = false
   }
+
+  // Whenever auth state changes, hide any open auth form.
+  closeAuthForm()
 }
 
 async function initAuth() {
@@ -103,10 +151,20 @@ async function initAuth() {
   renderAuthUI()
 
   // Keep auth state in sync with Supabase.
-  supabase.auth.onAuthStateChange((_event, newSession) => {
-    currentUser = newSession?.user ?? null
+  supabase.auth.onAuthStateChange(async (_event, newSession) => {
+    if (newSession) {
+      currentUser = newSession.user
+    } else {
+      // Signed out: create a fresh anonymous session so the user can keep using the app.
+      const { data, error: anonError } = await supabase.auth.signInAnonymously()
+      if (anonError) {
+        console.error('Error signing in anonymously after logout', anonError)
+        currentUser = null
+      } else {
+        currentUser = data?.user ?? null
+      }
+    }
     renderAuthUI()
-    // Refetch todos when auth state changes so we show the right list.
     refreshTodos()
   })
 }
@@ -269,35 +327,64 @@ form.addEventListener('submit', async (event) => {
   renderTodos()
 })
 
-signupButton.addEventListener('click', async () => {
-  const email = window.prompt('Enter email for your account:')
-  if (!email) return
-  const password = window.prompt('Create a password:')
-  if (!password) return
-
-  const { error } = await supabase.auth.signUp({ email, password })
-  if (error) {
-    console.error('Error signing up', error)
-    window.alert('Sign up failed. Please try again.')
-    return
-  }
-
-  window.alert('Check your email to confirm your account, then log in.')
+signupButton.addEventListener('click', () => {
+  openAuthForm('signup')
 })
 
-loginButton.addEventListener('click', async () => {
-  const email = window.prompt('Email:')
-  if (!email) return
-  const password = window.prompt('Password:')
-  if (!password) return
-
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error) {
-    console.error('Error logging in', error)
-    window.alert('Login failed. Please check your details and try again.')
-    return
-  }
+loginButton.addEventListener('click', () => {
+  openAuthForm('login')
 })
+
+if (authCancelButton) {
+  authCancelButton.addEventListener('click', () => {
+    closeAuthForm()
+  })
+}
+
+if (authForm) {
+  authForm.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    if (!authMode || !authEmailInput || !authPasswordInput) return
+
+    const email = authEmailInput.value.trim()
+    const password = authPasswordInput.value.trim()
+    if (!email || !password) return
+
+    if (authMode === 'signup') {
+      // If we're currently anonymous, upgrade this anonymous user into
+      // an email/password account so existing todos stay attached.
+      if (currentUser && !currentUser.email) {
+        const { error } = await supabase.auth.updateUser({ email, password })
+        if (error) {
+          console.error('Error upgrading anonymous user', error)
+          window.alert('Sign up failed. Please try again.')
+          return
+        }
+        window.alert('Account created from your temporary session.')
+      } else {
+        const { error } = await supabase.auth.signUp({ email, password })
+        if (error) {
+          console.error('Error signing up', error)
+          window.alert('Sign up failed. Please try again.')
+          return
+        }
+        window.alert('Check your email to confirm your account, then log in.')
+      }
+    } else if (authMode === 'login') {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) {
+        console.error('Error logging in', error)
+        window.alert('Login failed. Please check your details and try again.')
+        return
+      }
+    }
+
+    closeAuthForm()
+  })
+}
 
 logoutButton.addEventListener('click', async () => {
   const { error } = await supabase.auth.signOut()
