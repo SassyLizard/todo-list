@@ -131,21 +131,21 @@ function renderAuthUI() {
 
   if (!currentUser) {
     authStatusEl.textContent = 'Not signed in'
-    signupButton.disabled = false
-    loginButton.disabled = false
+    signupButton.hidden = false
+    loginButton.hidden = false
     logoutButton.hidden = true
     return
   }
 
   if (currentUser.email) {
     authStatusEl.textContent = `Signed in as ${currentUser.email}`
-    signupButton.disabled = true
-    loginButton.disabled = true
+    signupButton.hidden = true
+    loginButton.hidden = true
     logoutButton.hidden = false
   } else {
     authStatusEl.textContent = ''
-    signupButton.disabled = false
-    loginButton.disabled = false
+    signupButton.hidden = false
+    loginButton.hidden = false
     logoutButton.hidden = true
   }
 
@@ -426,7 +426,6 @@ if (authForm) {
         window.alert('Login failed. Please check your details and try again.')
         return
       }
-      showAuthMessage('You are now logged in.')
     }
 
     closeAuthForm()
