@@ -13,9 +13,9 @@ appElement.innerHTML = `
       <div class="auth-bar" aria-label="Account status">
         <span class="auth-status"></span>
         <div class="auth-actions">
-          <button type="button" class="auth-signup">Sign up</button>
-          <button type="button" class="auth-login">Log in</button>
-          <button type="button" class="auth-logout" hidden>Log out</button>
+          <button type="button" class="auth-signup auth-button">Sign up</button>
+          <button type="button" class="auth-login auth-button">Log in</button>
+          <button type="button" class="auth-logout auth-button" hidden>Log out</button>
         </div>
       </div>
     </header>
@@ -49,7 +49,7 @@ appElement.innerHTML = `
         placeholder="Add a new task"
         aria-label="Add a new todo"
       />
-      <button type="submit">Add</button>
+      <button type="submit" class="todo-add-button">Add</button>
     </form>
 
     <ul class="todo-list" aria-live="polite"></ul>
@@ -248,6 +248,15 @@ function updateCount() {
 function renderTodos() {
   list.innerHTML = ''
 
+  if (todos.length === 0) {
+    const empty = document.createElement('li')
+    empty.className = 'todo-empty'
+    empty.textContent = 'Your list is empty at the moment ..'
+    list.appendChild(empty)
+    updateCount()
+    return
+  }
+
   todos.forEach((todo) => {
     const li = document.createElement('li')
     li.className = 'todo-item'
@@ -275,7 +284,7 @@ function renderTodos() {
     deleteButton.type = 'button'
     deleteButton.className = 'todo-delete'
     deleteButton.setAttribute('aria-label', `Delete "${todo.text}"`)
-    deleteButton.textContent = 'Delete'
+    deleteButton.textContent = '×'
 
     li.appendChild(left)
     li.appendChild(deleteButton)

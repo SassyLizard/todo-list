@@ -54,6 +54,29 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Design overrides tuned to Figma */
+:root {
+  --color-bg: #020414;
+  --color-bg-elevated: #020414;
+  --color-border-subtle: #272b32;
+  --color-border-strong: #3b403f;
+
+  --color-text-main: #f5f5f5;
+  --color-text-muted: #9ea3b3;
+  --color-text-subtle: #7c8090;
+
+  --color-brand-green: #737f2a;
+  --color-brand-green-hover: #8e9b34;
+  --color-brand-green-active: #dfe768;
+  --color-brand-row-hover: #121603;
+
+  --color-brand-pink: #e4a9cf;
+  --color-brand-pink-strong: #e68cc6;
+
+  --color-input-border: #4d5b23;
+  --color-input-border-strong: #8fa53a;
+}
+
 /* Base reset */
 *,
 *::before,
@@ -109,14 +132,14 @@ a:hover {
 /* Base body styles using tokens */
 body {
   margin: 0;
-  min-width: 320px;
+  min-width: 400px;
   min-height: 100vh;
   background-color: var(--color-bg);
   color: var(--color-text-main);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-lg);
+  padding: var(--space-xl);
 }
 
 h1 {
@@ -126,7 +149,7 @@ h1 {
 
 #app {
   width: 100%;
-  max-width: 640px;
+  max-width: 480px;
   margin: 0 auto;
   padding: var(--space-xl);
   text-align: left;
@@ -160,30 +183,32 @@ button {
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: inherit;
-  background-color: #215544;
-  color: #ffffff;
+  background-color: var(--color-brand-green);
+  color: #f5f5f5;
   cursor: pointer;
-  transition: border-color 0.25s, background-color 0.25s, box-shadow 0.25s;
+  transition: border-color 150ms ease-out, background-color 150ms ease-out,
+    box-shadow 150ms ease-out, transform 100ms ease-out;
 }
 button:hover {
-  border-color: #16392f;
-  background-color: #16392f;
-  box-shadow: 0 4px 10px rgba(4, 17, 14, 0.8);
+  border-color: var(--color-brand-green-hover);
+  background-color: var(--color-brand-green-hover);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid var(--color-brand-pink);
+  outline-offset: 2px;
 }
 
 /* Todo app layout */
 .todo-app {
   background-color: var(--color-bg-elevated);
   border-radius: var(--radius-md);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-  padding: var(--space-lg);
+  box-shadow: none;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -198,7 +223,20 @@ button:focus-visible {
 }
 
 .todo-title {
-  font-size: var(--font-size-lg);
+  font-size: 1.75rem;
+  color: var(--color-brand-green-active);
+  position: relative;
+  margin-bottom: var(--space-sm);
+}
+
+.todo-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.4rem;
+  height: 3px;
+  background-color: var(--color-brand-pink);
 }
 
 .todo-subtitle {
@@ -221,7 +259,7 @@ button:focus-visible {
 }
 
 .auth-actions button {
-  padding: 0.25rem 0.75rem;
+  padding: 0.35rem 0.9rem;
   font-size: var(--font-size-xs);
 }
 
@@ -265,19 +303,33 @@ button:focus-visible {
   flex: 1;
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-subtle);
-  background-color: #020617;
+  border: 1px solid var(--color-input-border);
+  background-color: transparent;
   color: var(--color-text-main);
 }
 
 .todo-input:focus-visible {
-  outline: 2px solid var(--color-accent-soft);
+  outline: 2px solid var(--color-input-border-strong);
   outline-offset: 2px;
-  border-color: var(--color-accent);
+  border-color: var(--color-input-border-strong);
 }
 
 .todo-input::placeholder {
   color: var(--color-text-muted);
+}
+
+.todo-add-button {
+  min-width: 96px;
+  text-align: center;
+}
+
+.todo-add-button:hover {
+  background-color: var(--color-brand-green-hover);
+}
+
+.todo-add-button:active {
+  background-color: var(--color-brand-pink);
+  color: #1a1020;
 }
 
 .todo-list {
@@ -291,12 +343,8 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-sm);
-  padding: var(--space-sm) 0;
-  border-bottom: 1px solid var(--color-border-subtle);
-}
-
-.todo-item:last-child {
-  border-bottom: none;
+  padding: var(--space-sm) var(--space-sm);
+  border-radius: var(--radius-md);
 }
 
 .todo-item-left {
@@ -314,17 +362,74 @@ button:focus-visible {
   color: var(--color-text-subtle);
 }
 
+.todo-item--completed {
+  background-color: rgba(18, 22, 3, 0.9);
+}
+
+.todo-item:hover:not(.todo-item--completed):not(:has(.todo-checkbox:hover, .todo-delete:hover)) {
+  background-color: var(--color-brand-row-hover);
+}
+
+.todo-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  border: 2px solid var(--color-input-border);
+  background-color: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+.todo-checkbox:hover {
+  border-color: var(--color-brand-pink-strong);
+  background-color: var(--color-brand-pink);
+  box-shadow: 0 0 0 2px rgba(230, 140, 198, 0.25);
+}
+
+.todo-checkbox::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(45deg);
+  opacity: 0;
+}
+
+.todo-item--completed .todo-checkbox {
+  background-color: var(--color-brand-pink);
+  border-color: var(--color-brand-pink-strong);
+}
+
+.todo-item--completed .todo-checkbox::after {
+  opacity: 1;
+}
+
 .todo-delete {
   background-color: transparent;
   border-color: transparent;
   color: var(--color-text-muted);
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-sm);
+  font-size: 1.1rem;
+  line-height: 1;
 }
 
 .todo-delete:hover {
-  background-color: var(--color-danger-soft);
-  color: var(--color-danger);
+  background-color: transparent;
+  color: var(--color-brand-pink-strong);
+}
+
+.todo-empty {
+  margin-top: var(--space-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }
 
 .todo-footer {
