@@ -16,30 +16,45 @@ appElement.innerHTML = `
           <button type="button" class="auth-login auth-button">Log in</button>
           <button type="button" class="auth-logout auth-button" hidden>Log out</button>
         </div>
+        <p class="auth-message" aria-live="polite"></p>
       </div>
     </header>
 
     <section class="auth-panel" hidden>
-      <form class="auth-form" autocomplete="off">
-        <input
-          class="auth-email"
-          type="email"
-          name="email"
-          placeholder="Email"
-          aria-label="Email"
-          required
-        />
-        <input
-          class="auth-password"
-          type="password"
-          name="password"
-          placeholder="Password"
-          aria-label="Password"
-          required
-        />
-        <button type="submit" class="auth-submit">Continue</button>
-        <button type="button" class="auth-cancel">Cancel</button>
-      </form>
+      <div class="auth-panel-inner">
+        <form class="auth-form" autocomplete="off">
+          <div class="auth-fields-row">
+            <div class="auth-field-group">
+              <label class="auth-label" for="auth-email">Email</label>
+              <input
+                id="auth-email"
+                class="auth-email auth-input"
+                type="email"
+                name="email"
+                placeholder="email@example.com"
+                aria-label="Email"
+                required
+              />
+            </div>
+            <div class="auth-field-group">
+              <label class="auth-label" for="auth-password">Password</label>
+              <input
+                id="auth-password"
+                class="auth-password auth-input"
+                type="password"
+                name="password"
+                placeholder="*******"
+                aria-label="Password"
+                required
+              />
+            </div>
+          </div>
+          <div class="auth-actions-inline">
+            <button type="button" class="auth-cancel">Cancel</button>
+            <button type="submit" class="auth-submit">Create</button>
+          </div>
+        </form>
+      </div>
     </section>
 
     <form class="todo-input-row" autocomplete="off">
@@ -75,6 +90,7 @@ const authEmailInput = appElement.querySelector('.auth-email')
 const authPasswordInput = appElement.querySelector('.auth-password')
 const authSubmitButton = appElement.querySelector('.auth-submit')
 const authCancelButton = appElement.querySelector('.auth-cancel')
+const authMessageEl = appElement.querySelector('.auth-message')
 
 let todos = []
 let currentUser = null
@@ -101,8 +117,13 @@ function openAuthForm(mode) {
   authPanel.hidden = false
   authEmailInput.value = ''
   authPasswordInput.value = ''
-  authSubmitButton.textContent = mode === 'signup' ? 'Create account' : 'Log in'
+  authSubmitButton.textContent = mode === 'signup' ? 'Create' : 'Log in'
   authEmailInput.focus()
+}
+
+function showAuthMessage(message) {
+  if (!authMessageEl) return
+  authMessageEl.textContent = message
 }
 
 function renderAuthUI() {
@@ -385,7 +406,7 @@ if (authForm) {
           window.alert('Sign up failed. Please try again.')
           return
         }
-        window.alert('Account created from your temporary session.')
+        showAuthMessage('Account created from your temporary session.')
       } else {
         const { error } = await supabase.auth.signUp({ email, password })
         if (error) {
@@ -393,7 +414,7 @@ if (authForm) {
           window.alert('Sign up failed. Please try again.')
           return
         }
-        window.alert('Check your email to confirm your account, then log in.')
+        showAuthMessage('Check your email to confirm your account, then log in.')
       }
     } else if (authMode === 'login') {
       const { error } = await supabase.auth.signInWithPassword({
@@ -405,6 +426,7 @@ if (authForm) {
         window.alert('Login failed. Please check your details and try again.')
         return
       }
+      showAuthMessage('You are now logged in.')
     }
 
     closeAuthForm()
