@@ -76,6 +76,7 @@ appElement.innerHTML = `
   </main>
 `
 
+// Element references
 const form = appElement.querySelector('.todo-input-row')
 const input = appElement.querySelector('.todo-input')
 const list = appElement.querySelector('.todo-list')
@@ -92,10 +93,12 @@ const authSubmitButton = appElement.querySelector('.auth-submit')
 const authCancelButton = appElement.querySelector('.auth-cancel')
 const authMessageEl = appElement.querySelector('.auth-message')
 
+// Application state
 let todos = []
 let currentUser = null
 let authMode = null // 'signup' | 'login' | null
 
+// Auth UI helpers
 function closeAuthForm() {
   if (!authPanel || !authForm) return
   authPanel.hidden = true
@@ -126,6 +129,7 @@ function showAuthMessage(message) {
   authMessageEl.textContent = message
 }
 
+// Auth state rendering
 function renderAuthUI() {
   if (!authStatusEl || !signupButton || !loginButton || !logoutButton) return
 
@@ -199,6 +203,7 @@ async function initAuth() {
   })
 }
 
+// Data access – todos
 async function fetchTodos() {
   const { data, error } = await supabase
     .from('todos')
@@ -269,6 +274,7 @@ async function deleteTodo(id) {
   return true
 }
 
+// Rendering helpers
 function updateCount() {
   if (!countEl) return
 
@@ -359,6 +365,7 @@ async function refreshTodos() {
   renderTodos()
 }
 
+// Event listeners
 form.addEventListener('submit', async (event) => {
   event.preventDefault()
   const text = input.value.trim()
@@ -441,6 +448,7 @@ logoutButton.addEventListener('click', async () => {
   }
 })
 
+// Bootstrapping
 async function init() {
   await initAuth()
   await refreshTodos()

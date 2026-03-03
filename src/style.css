@@ -248,6 +248,7 @@ button:focus-visible {
   margin-top: var(--space-lg);
 }
 
+/* Auth layout and controls */
 .auth-bar {
   display: flex;
   flex-direction: column;
@@ -381,6 +382,7 @@ button:focus-visible {
   border-color: #7b883d;
   border-width: 2px;
   color: #1f2441;
+  background: #fff5fc;
   font-size: 16px;
   font-weight: 400;
 }
