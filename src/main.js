@@ -249,6 +249,13 @@ async function deleteTodo(id) {
 }
 
 function updateCount() {
+  if (!countEl) return
+
+  if (!todos.length) {
+    countEl.textContent = ''
+    return
+  }
+
   const remaining = todos.filter((t) => !t.completed).length
   const label = remaining === 1 ? 'item' : 'items'
   countEl.textContent = `${remaining} ${label} left`
