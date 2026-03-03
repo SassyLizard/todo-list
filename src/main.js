@@ -8,7 +8,6 @@ appElement.innerHTML = `
     <header class="todo-header">
       <div>
         <h1 class="todo-title">Todo List</h1>
-        <p class="todo-subtitle">Capture tasks and keep track of what’s left.</p>
       </div>
       <div class="auth-bar" aria-label="Account status">
         <span class="auth-status"></span>
@@ -20,26 +19,28 @@ appElement.innerHTML = `
       </div>
     </header>
 
-    <form class="auth-form" autocomplete="off" hidden>
-      <input
-        class="auth-email"
-        type="email"
-        name="email"
-        placeholder="Email"
-        aria-label="Email"
-        required
-      />
-      <input
-        class="auth-password"
-        type="password"
-        name="password"
-        placeholder="Password"
-        aria-label="Password"
-        required
-      />
-      <button type="submit" class="auth-submit">Continue</button>
-      <button type="button" class="auth-cancel">Cancel</button>
-    </form>
+    <section class="auth-panel" hidden>
+      <form class="auth-form" autocomplete="off">
+        <input
+          class="auth-email"
+          type="email"
+          name="email"
+          placeholder="Email"
+          aria-label="Email"
+          required
+        />
+        <input
+          class="auth-password"
+          type="password"
+          name="password"
+          placeholder="Password"
+          aria-label="Password"
+          required
+        />
+        <button type="submit" class="auth-submit">Continue</button>
+        <button type="button" class="auth-cancel">Cancel</button>
+      </form>
+    </section>
 
     <form class="todo-input-row" autocomplete="off">
       <input
@@ -68,6 +69,7 @@ const authStatusEl = appElement.querySelector('.auth-status')
 const signupButton = appElement.querySelector('.auth-signup')
 const loginButton = appElement.querySelector('.auth-login')
 const logoutButton = appElement.querySelector('.auth-logout')
+const authPanel = appElement.querySelector('.auth-panel')
 const authForm = appElement.querySelector('.auth-form')
 const authEmailInput = appElement.querySelector('.auth-email')
 const authPasswordInput = appElement.querySelector('.auth-password')
@@ -79,17 +81,24 @@ let currentUser = null
 let authMode = null // 'signup' | 'login' | null
 
 function closeAuthForm() {
-  if (!authForm) return
-  authForm.hidden = true
+  if (!authPanel || !authForm) return
+  authPanel.hidden = true
   authMode = null
   if (authEmailInput) authEmailInput.value = ''
   if (authPasswordInput) authPasswordInput.value = ''
 }
 
 function openAuthForm(mode) {
-  if (!authForm || !authEmailInput || !authPasswordInput || !authSubmitButton) return
+  if (
+    !authPanel ||
+    !authForm ||
+    !authEmailInput ||
+    !authPasswordInput ||
+    !authSubmitButton
+  )
+    return
   authMode = mode
-  authForm.hidden = false
+  authPanel.hidden = false
   authEmailInput.value = ''
   authPasswordInput.value = ''
   authSubmitButton.textContent = mode === 'signup' ? 'Create account' : 'Log in'
@@ -113,10 +122,10 @@ function renderAuthUI() {
     loginButton.disabled = true
     logoutButton.hidden = false
   } else {
-    authStatusEl.textContent = 'Using a temporary account'
+    authStatusEl.textContent = ''
     signupButton.disabled = false
     loginButton.disabled = false
-    logoutButton.hidden = false
+    logoutButton.hidden = true
   }
 
   // Whenever auth state changes, hide any open auth form.
